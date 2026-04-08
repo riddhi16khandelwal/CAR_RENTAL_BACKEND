@@ -196,7 +196,6 @@
 //     res.json({ success: false, message: error.message });
 //   }
 // };
-
 import Booking from "../models/Booking.js";
 import Car from "../models/Car.js";
 import QRCode from "qrcode";
@@ -219,19 +218,19 @@ export const checkAvailabilityOfCar = async (req, res) => {
 
     const cars = await Car.find({ location, isAvailable: true });
 
-    const availableCarsPromises = cars.map(async (car) => {
+    const availableCarsPromises = cars.map(async (carItem) => {
       const isAvailable = await checkAvailability(
-        car._id,
+        carItem._id,
         pickupDate,
         returnDate
       );
-      return { ...car._doc, isAvailable };
+      return { ...carItem._doc, isAvailable };
     });
 
     let availableCars = await Promise.all(availableCarsPromises);
 
     availableCars = availableCars.filter(
-      (car) => car.isAvailable === true
+      (carItem) => carItem.isAvailable === true
     );
 
     res.json({ success: true, availableCars });
@@ -241,10 +240,10 @@ export const checkAvailabilityOfCar = async (req, res) => {
   }
 };
 
-// 🧾 CREATE BOOKING (NO QR HERE)
+// 🧾 CREATE BOOKING
 export const createBooking = async (req, res) => {
   try {
-     const userId = req.user.id;
+    const userId = req.user.id; // ✅ FIXED
     const { car, pickupDate, returnDate } = req.body;
 
     if (!car || !pickupDate || !returnDate) {
@@ -278,7 +277,7 @@ export const createBooking = async (req, res) => {
     await Booking.create({
       car,
       owner: carData.owner,
-      user: _id,
+      user: userId, // ✅ FIXED
       pickupDate,
       returnDate,
       price,
@@ -299,7 +298,7 @@ export const createBooking = async (req, res) => {
   }
 };
 
-// 💳 GENERATE QR (AFTER CONFIRM)
+// 💳 GENERATE QR
 export const generateQR = async (req, res) => {
   try {
     const { bookingId } = req.body;
@@ -361,9 +360,9 @@ export const verifyPayment = async (req, res) => {
 // 📄 USER BOOKINGS
 export const getUserBookings = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const userId = req.user.id; // ✅ FIXED
 
-    const bookings = await Booking.find({ user: _id })
+    const bookings = await Booking.find({ user: userId })
       .populate("car")
       .sort({ createdAt: -1 });
 
@@ -382,7 +381,7 @@ export const getOwnerBookings = async (req, res) => {
     }
 
     const bookings = await Booking.find({
-      owner: req.user._id,
+      owner: req.user.id, // ✅ FIXED
     })
       .populate("car user")
       .select("-user.password")
@@ -395,15 +394,15 @@ export const getOwnerBookings = async (req, res) => {
   }
 };
 
-// 🔄 CHANGE STATUS (🔥 FIXED)
+// 🔄 CHANGE STATUS
 export const changeBookingStatus = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const userId = req.user.id; // ✅ FIXED
     const { bookingId, status } = req.body;
 
-    const booking = await Booking.findOne({ bookingId }); // ✅ FIX
+    const booking = await Booking.findOne({ bookingId });
 
-    if (!booking || booking.owner.toString() !== _id.toString()) {
+    if (!booking || booking.owner.toString() !== userId.toString()) {
       return res.json({ success: false, message: "Unauthorized" });
     }
 
@@ -417,6 +416,7 @@ export const changeBookingStatus = async (req, res) => {
   }
 };
 
+// 🗑️ DELETE BOOKING
 export const deleteBooking = async (req, res) => {
   try {
     const { bookingId } = req.body;

@@ -10,37 +10,22 @@ const imagekit = new ImageKit({
   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
 });
 
+// 🔥 FIXED OWNER ID (Riddhi)
+const OWNER_ID = "69d5f29074d724c9dd9805d8";
 
-// ================= CHANGE ROLE =================
+
+// ================= CHANGE ROLE (DISABLED) =================
 export const changeRoleToOwner = async (req, res) => {
-  try {
-
-    const { _id } = req.user;
-
-    await User.findByIdAndUpdate(_id, { role: "owner" });
-
-    res.json({
-      success: true,
-      message: "Now you can list cars",
-    });
-
-  } catch (error) {
-
-    console.log(error.message);
-
-    res.json({
-      success: false,
-      message: error.message,
-    });
-  }
+  return res.json({
+    success: false,
+    message: "Owner role cannot be changed",
+  });
 };
 
 
 // ================= ADD CAR =================
 export const addCar = async (req, res) => {
   try {
-
-    const { _id } = req.user;
 
     const car = JSON.parse(req.body.carData);
     const imageFile = req.file;
@@ -71,7 +56,7 @@ export const addCar = async (req, res) => {
 
     await Car.create({
       ...car,
-      owner: _id,
+      owner: OWNER_ID, // ✅ ALWAYS Riddhi
       image: optimizedImageURL,
     });
 
@@ -81,7 +66,6 @@ export const addCar = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error.message);
 
     res.json({
@@ -96,9 +80,7 @@ export const addCar = async (req, res) => {
 export const getOwnerCars = async (req, res) => {
   try {
 
-    const { _id } = req.user;
-
-    const cars = await Car.find({ owner: _id });
+    const cars = await Car.find({ owner: OWNER_ID });
 
     res.json({
       success: true,
@@ -106,7 +88,6 @@ export const getOwnerCars = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error.message);
 
     res.json({
@@ -121,12 +102,11 @@ export const getOwnerCars = async (req, res) => {
 export const toggleCarAvailability = async (req, res) => {
   try {
 
-    const { _id } = req.user;
     const { carId } = req.body;
 
     const car = await Car.findById(carId);
 
-    if (car.owner.toString() !== _id.toString()) {
+    if (car.owner.toString() !== OWNER_ID) {
       return res.json({
         success: false,
         message: "Unauthorized",
@@ -143,7 +123,6 @@ export const toggleCarAvailability = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error.message);
 
     res.json({
@@ -158,12 +137,11 @@ export const toggleCarAvailability = async (req, res) => {
 export const deleteCar = async (req, res) => {
   try {
 
-    const { _id } = req.user;
     const { carId } = req.body;
 
     const car = await Car.findById(carId);
 
-    if (car.owner.toString() !== _id.toString()) {
+    if (car.owner.toString() !== OWNER_ID) {
       return res.json({
         success: false,
         message: "Unauthorized",
@@ -181,7 +159,6 @@ export const deleteCar = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error.message);
 
     res.json({
@@ -196,28 +173,19 @@ export const deleteCar = async (req, res) => {
 export const getDashboardData = async (req, res) => {
   try {
 
-    const { _id, role } = req.user;
+    const cars = await Car.find({ owner: OWNER_ID });
 
-    if (role !== "owner") {
-      return res.json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-
-    const cars = await Car.find({ owner: _id });
-
-    const bookings = await Booking.find({ owner: _id })
+    const bookings = await Booking.find({ owner: OWNER_ID })
       .populate("car")
       .sort({ createdAt: -1 });
 
     const pendingBookings = await Booking.find({
-      owner: _id,
+      owner: OWNER_ID,
       status: "pending",
     });
 
     const completedBookings = await Booking.find({
-      owner: _id,
+      owner: OWNER_ID,
       status: "confirmed",
     });
 
@@ -240,7 +208,6 @@ export const getDashboardData = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error.message);
 
     res.json({
@@ -292,7 +259,6 @@ export const updateImage = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log(error.message);
 
     res.json({

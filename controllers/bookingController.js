@@ -244,7 +244,7 @@ export const checkAvailabilityOfCar = async (req, res) => {
 // 🧾 CREATE BOOKING (NO QR HERE)
 export const createBooking = async (req, res) => {
   try {
-    const { _id } = req.user;
+     const userId = req.user.id;
     const { car, pickupDate, returnDate } = req.body;
 
     if (!car || !pickupDate || !returnDate) {

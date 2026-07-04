@@ -11,8 +11,7 @@ const imagekit = new ImageKit({
 });
 
 // 🔥 FIXED OWNER ID (Riddhi)
-const OWNER_ID = "69d5f29074d724c9dd9805d8";
-
+const OWNER_ID = "6a490c37898766195e0e5bd8";
 
 // ================= CHANGE ROLE (DISABLED) =================
 export const changeRoleToOwner = async (req, res) => {
